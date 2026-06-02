@@ -4,13 +4,21 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Transaction, TransactionType } from '../models/transaction.model';
 
+import { DashboardSummary } from '../models/dashboard-summary.model';
+
 @Injectable({
   providedIn: 'root'
 })
 export class TransactionService {
   private readonly apiUrl = `${environment.apiUrl}/transactions`;
+  private readonly dashboardUrl = `${environment.apiUrl}/dashboard`;
 
   constructor(private http: HttpClient) {}
+
+  getDashboardSummary(userId: string): Observable<DashboardSummary> {
+    const params = new HttpParams().set('userId', userId);
+    return this.http.get<DashboardSummary>(`${this.dashboardUrl}/summary`, { params });
+  }
 
   getTransactionById(id: string): Observable<Transaction> {
     return this.http.get<Transaction>(`${this.apiUrl}/${id}`);
