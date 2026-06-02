@@ -1,0 +1,205 @@
+<div class="tab-pane">
+  <div class="card filter-panel">
+    <div class="card-header">
+      <h3>Filtres & Recherche</h3>
+      <button class="btn-text text-danger" (click)="clearFilters()" *ngIf="filterType || filterCategoryId || filterStartDate || filterEndDate || searchQuery">
+        Effacer les filtres
+      </button>
+    </div>
+    <div class="card-body">
+      <div class="filters-grid">
+        
+        <!-- Search -->
+        <div class="form-group">
+          <label for="search">Rechercher</label>
+          <div class="input-wrapper">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="input-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input id="search" type="text" [(ngModel)]="searchQuery" placeholder="Rechercher par titre, description..." />
+          </div>
+        </div>
+
+        <!-- Type -->
+        <div class="form-group">
+          <label for="filterType">Type</label>
+          <select id="filterType" [(ngModel)]="filterType">
+            <option value="">Tous les types</option>
+            <option value="INCOME">Revenus</option>
+            <option value="EXPENSE">Dépenses</option>
+          </select>
+        </div>
+
+        <!-- Category -->
+        <div class="form-group">
+          <label for="filterCategory">Catégorie</label>
+          <select id="filterCategory" [(ngModel)]="filterCategoryId">
+            <option value="">Toutes les catégories</option>
+            @for (cat of categories(); track cat.id) {
+              <option [value]="cat.id">{{ cat.name }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Date Start -->
+        <div class="form-group">
+          <label for="filterStart">Date de début</label>
+          <input id="filterStart" type="date" [(ngModel)]="filterStartDate" />
+        </div>
+
+        <!-- Date End -->
+        <div class="form-group">
+          <label for="filterEnd">Date de fin</label>
+          <input id="filterEnd" type="date" [(ngModel)]="filterEndDate" />
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ALL TRANSACTIONS LIST CARD -->
+  <div class="card mt-6">
+    <div class="card-header">
+      <h3>Historique des Transactions ({{ filteredTransactions.length }})</h3>
+      <button class="btn btn-primary btn-sm" (click)="openTransactionModal()">Ajouter une Transaction</button>
+    </div>
+    
+    <div class="card-body no-padding">
+      @if (isLoading()) {
+        <div class="empty-state py-12">
+          <span class="spinner" style="border-top-color: var(--primary);"></span>
+          <p>Chargement des transactions...</p>
+        </div>
+      } @else if (filteredTransactions.length > 0) {
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Titre</th>
+                <th>Description</th>
+                <th>Catégorie</th>
+                <th>Date & Heure</th>
+                <th>Type</th>
+                <th class="text-right">Montant</th>
+                <th class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (tx of filteredTransactions; track tx.id) {
+                <tr>
+                  <td class="font-medium">{{ tx.name }}</td>
+                  <td class="text-secondary text-sm max-w-xs truncate">{{ tx.description || '-' }}</td>
+                  <td>
+                    <span class="category-badge" [style.background-color]="getCategoryColor(tx.category.name) + '15'" [style.color]="getCategoryColor(tx.category.name)">
+                      {{ tx.category.name }}
+                    </span>
+                  </td>
+                  <td class="text-secondary text-sm">
+                    {{ tx.transactionDate }}
+                  </td>
+                  <td>
+                    <span class="type-badge" [class.income]="tx.transactionType === 'INCOME'" [class.expense]="tx.transactionType === 'EXPENSE'">
+                      {{ tx.transactionType === 'INCOME' ? 'Revenu' : 'Dépense' }}
+                    </span>
+                  </td>
+                  <td class="text-right font-semibold" [class.text-success]="tx.transactionType === 'INCOME'" [class.text-danger]="tx.transactionType === 'EXPENSE'">
+                    {{ tx.transactionType === 'INCOME' ? '+' : '-' }}{{ tx.amount.toLocaleString() }} €
+                  </td>
+                  <td class="text-center">
+                    <div class="table-actions">
+                      <button class="btn-icon" (click)="openTransactionModal(tx)" title="Modifier">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"></path></svg>
+                      </button>
+                      <button class="btn-icon text-danger" (click)="deleteTransaction(tx.id!)" title="Supprimer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="empty-state py-12">
+          <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="empty-icon"><circle cx="12" cy="12" r="10"></circle><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+          <h3>Aucune transaction trouvée</h3>
+          <p>Aucune transaction ne correspond à vos critères de filtrage actuels.</p>
+          <button class="btn btn-secondary mt-4" (click)="clearFilters()">Réinitialiser les filtres</button>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT TRANSACTION MODAL -->
+@if (showTransactionModal) {
+  <div class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>{{ editingTransaction ? 'Modifier la Transaction' : 'Nouvelle Transaction' }}</h3>
+        <button class="btn-icon" (click)="closeTransactionModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <form (submit)="submitTransaction(); $event.preventDefault()">
+        <div class="modal-body">
+          
+          <!-- Toggle Income/Expense -->
+          <div class="form-group">
+            <label>Type de transaction</label>
+            <div class="toggle-group">
+              <button type="button" class="toggle-btn expense" [class.active]="txType === 'EXPENSE'" (click)="txType = 'EXPENSE'">
+                Dépense
+              </button>
+              <button type="button" class="toggle-btn income" [class.active]="txType === 'INCOME'" (click)="txType = 'INCOME'">
+                Revenu
+              </button>
+            </div>
+          </div>
+
+          <!-- Transaction Name -->
+          <div class="form-group">
+            <label for="txName">Titre de la transaction *</label>
+            <input id="txName" type="text" [(ngModel)]="txName" name="txName" placeholder="Ex: Courses Carrefour, Loyer..." required />
+          </div>
+
+          <!-- Amount -->
+          <div class="form-group">
+            <label for="txAmount">Montant (€) *</label>
+            <input id="txAmount" type="number" step="0.01" min="0.01" [(ngModel)]="txAmount" name="txAmount" placeholder="0.00" required />
+          </div>
+
+          <!-- Category Selection -->
+          <div class="form-group">
+            <label for="txCategory">Catégorie *</label>
+            <select id="txCategory" [(ngModel)]="txCategoryId" name="txCategoryId" required>
+              @for (cat of categories(); track cat.id) {
+                <option [value]="cat.id">{{ cat.name }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Transaction Date -->
+          <div class="form-group">
+            <label for="txDate">Date & Heure</label>
+            <input id="txDate" type="datetime-local" [(ngModel)]="txDate" name="txDate" />
+          </div>
+
+          <!-- Description -->
+          <div class="form-group">
+            <label for="txDescription">Description (optionnelle)</label>
+            <textarea id="txDescription" [(ngModel)]="txDescription" name="txDescription" rows="3" placeholder="Ajouter des notes complémentaires..."></textarea>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeTransactionModal()">Annuler</button>
+          <button type="submit" class="btn btn-primary">
+            {{ editingTransaction ? 'Sauvegarder les modifications' : 'Ajouter la transaction' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
