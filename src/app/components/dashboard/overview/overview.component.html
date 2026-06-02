@@ -1,0 +1,229 @@
+<div class="tab-pane">
+  
+  @if (isLoading()) {
+    <div class="empty-state">
+      <span class="spinner" style="border-top-color: var(--primary);"></span>
+      <p>Chargement des statistiques financières...</p>
+    </div>
+  } @else {
+    <!-- KPI GRID -->
+    <div class="kpi-grid">
+      <div class="kpi-card balance">
+        <div class="kpi-icon-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="kpi-icon"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="12" y1="4" x2="12" y2="20"></line></svg>
+        </div>
+        <div class="kpi-data">
+          <span class="kpi-label">Solde Total Net</span>
+          <h2 class="kpi-value" [class.negative]="totalBalance() < 0">{{ totalBalance().toLocaleString() }} €</h2>
+        </div>
+      </div>
+
+      <div class="kpi-card income">
+        <div class="kpi-icon-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="kpi-icon"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+        </div>
+        <div class="kpi-data">
+          <span class="kpi-label">Revenus Mensuels</span>
+          <h2 class="kpi-value">{{ totalIncome().toLocaleString() }} €</h2>
+        </div>
+      </div>
+
+      <div class="kpi-card expense">
+        <div class="kpi-icon-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="kpi-icon"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+        </div>
+        <div class="kpi-data">
+          <span class="kpi-label">Dépenses Mensuelles</span>
+          <h2 class="kpi-value">{{ totalExpense().toLocaleString() }} €</h2>
+        </div>
+      </div>
+
+      <div class="kpi-card savings">
+        <div class="kpi-icon-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="kpi-icon"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg>
+        </div>
+        <div class="kpi-data">
+          <span class="kpi-label">Épargne Totalisée</span>
+          <h2 class="kpi-value">{{ totalSavings().toLocaleString() }} €</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS SECTION -->
+    <div class="analytics-grid">
+      
+      <!-- SPENDING CHART CARD -->
+      <div class="card chart-card">
+        <div class="card-header">
+          <h3>Répartition des Dépenses</h3>
+          <span class="text-secondary text-sm">Par catégorie</span>
+        </div>
+        
+        <div class="card-body chart-body">
+          @if (categorySpending().length > 0) {
+            <div class="donut-chart-container">
+              <svg viewBox="0 0 120 120" class="donut-chart">
+                <circle cx="60" cy="60" r="50" fill="transparent" stroke="#f1f5f9" stroke-width="12"></circle>
+                @for (slice of getChartSlices(); track $index) {
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="50"
+                    fill="transparent"
+                    [attr.stroke]="slice.color"
+                    stroke-width="12"
+                    [attr.stroke-dasharray]="slice.strokeDashArray"
+                    [attr.stroke-dashoffset]="slice.strokeDashOffset"
+                    stroke-linecap="round"
+                    transform="rotate(-90 60 60)"
+                    class="donut-slice"
+                  ></circle>
+                }
+              </svg>
+              <div class="donut-center-text">
+                <span class="donut-total-val">{{ totalExpense().toLocaleString() }} €</span>
+                <span class="donut-total-lbl">Total dépensé</span>
+              </div>
+            </div>
+
+            <div class="chart-legend">
+              @for (item of categorySpending().slice(0, 5); track item.category.id) {
+                <div class="legend-item">
+                  <span class="legend-badge" [style.background-color]="item.color"></span>
+                  <span class="legend-name">{{ item.category.name }}</span>
+                  <span class="legend-value">{{ item.amount.toLocaleString() }} €</span>
+                  <span class="legend-percent">({{ item.percentage.toFixed(0) }}%)</span>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="empty-state">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="empty-icon"><circle cx="12" cy="12" r="10"></circle><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+              <p>Aucune dépense enregistrée pour afficher le graphique.</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- INSIGHTS & SAVINGS GOALS DOCK -->
+      <div class="overview-dock-grid">
+        
+        <!-- SMART INSIGHTS ENGINE -->
+        <div class="card insights-card">
+          <div class="card-header">
+            <h3>Analyses & Conseils IA</h3>
+          </div>
+          <div class="card-body">
+            <div class="insights-list">
+              @for (insight of insights(); track $index) {
+                <div class="insight-item">
+                  <div class="insight-bullet">✨</div>
+                  <p class="insight-text">{{ insight }}</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- SAVINGS PROGRESS SHORTLIST -->
+        <div class="card overview-goals-card">
+          <div class="card-header">
+            <h3>Objectifs d'Épargne</h3>
+            <button class="btn-text" (click)="changeView('goals')">Voir tout</button>
+          </div>
+          <div class="card-body">
+            @if (savingsGoals().length > 0) {
+              <div class="goals-shortlist">
+                @for (goal of savingsGoals().slice(0, 3); track goal.id) {
+                  <div class="goal-short-item">
+                    <div class="goal-short-header">
+                      <span class="goal-short-name">{{ goal.name }}</span>
+                      <span class="goal-short-ratio">{{ goal.currentAmount.toLocaleString() }} / {{ goal.amount.toLocaleString() }} €</span>
+                    </div>
+                    <div class="progress-bar-container">
+                      <div class="progress-bar-fill" [style.width.%]="(goal.currentAmount / goal.amount) * 100" [style.background]="'linear-gradient(90deg, #6366f1, #a855f7)'"></div>
+                    </div>
+                    <div class="goal-short-meta">
+                      <span>{{ ((goal.currentAmount / goal.amount) * 100).toFixed(0) }}% complété</span>
+                      <span class="text-warn" *ngIf="getDaysRemaining(goal.deadline) >= 0">
+                        {{ getDaysRemaining(goal.deadline) }} jours restants
+                      </span>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="empty-state-sm">
+                <p>Aucun objectif défini. <button class="btn-link" (click)="changeView('goals')">Créer un objectif</button></p>
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RECENT TRANSACTIONS TABLE CARD -->
+    <div class="card recent-txs-card mt-6">
+      <div class="card-header">
+        <h3>Transactions Récentes</h3>
+        <button class="btn btn-secondary btn-sm" (click)="changeView('transactions')">Consulter toutes les transactions</button>
+      </div>
+      
+      <div class="card-body no-padding">
+        @if (transactions().length > 0) {
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Titre</th>
+                  <th>Catégorie</th>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th class="text-right">Montant</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (tx of transactions().slice(0, 6); track tx.id) {
+                  <tr>
+                    <td>
+                      <div class="tx-title-cell">
+                        <span class="tx-name font-medium">{{ tx.name }}</span>
+                        @if (tx.description) {
+                          <span class="tx-desc text-xs text-secondary">{{ tx.description }}</span>
+                        }
+                      </div>
+                    </td>
+                    <td>
+                      <span class="category-badge" [style.background-color]="getCategoryColor(tx.category.name) + '15'" [style.color]="getCategoryColor(tx.category.name)">
+                        {{ tx.category.name }}
+                      </span>
+                    </td>
+                    <td class="text-secondary text-sm">
+                      {{ tx.transactionDate?.substring(0, 10) }}
+                    </td>
+                    <td>
+                      <span class="type-badge" [class.income]="tx.transactionType === 'INCOME'" [class.expense]="tx.transactionType === 'EXPENSE'">
+                        {{ tx.transactionType === 'INCOME' ? 'Revenu' : 'Dépense' }}
+                      </span>
+                    </td>
+                    <td class="text-right font-semibold" [class.text-success]="tx.transactionType === 'INCOME'" [class.text-danger]="tx.transactionType === 'EXPENSE'">
+                      {{ tx.transactionType === 'INCOME' ? '+' : '-' }}{{ tx.amount.toLocaleString() }} €
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="empty-state py-8">
+            <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="empty-icon"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M12 4v16"></path></svg>
+            <h3>Aucune transaction trouvée</h3>
+            <p>Commencez à équilibrer vos comptes en ajoutant votre première transaction.</p>
+            <button class="btn btn-primary mt-4" (click)="changeView('transactions')">Ajouter une transaction</button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
