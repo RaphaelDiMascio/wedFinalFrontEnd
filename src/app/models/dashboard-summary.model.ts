@@ -10,6 +10,7 @@ export interface CategorySpending {
 
 export interface DashboardSummary {
   totalBalance: number;
+  availableBalance: number;
   totalIncome: number;
   totalExpense: number;
   totalSavings: number;

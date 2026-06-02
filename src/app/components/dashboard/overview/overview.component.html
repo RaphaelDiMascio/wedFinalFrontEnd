@@ -9,32 +9,12 @@
     <!-- KPI GRID -->
     <div class="kpi-grid">
       <div class="kpi-card balance">
-        <div class="kpi-icon-wrapper">
+        <div class="kpi-icon-wrapper" style="background-color: #dbeafe; color: #1d4ed8;">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="kpi-icon"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="12" y1="4" x2="12" y2="20"></line></svg>
         </div>
         <div class="kpi-data">
-          <span class="kpi-label">Solde Total Net</span>
-          <h2 class="kpi-value" [class.negative]="totalBalance() < 0">{{ totalBalance().toLocaleString() }} €</h2>
-        </div>
-      </div>
-
-      <div class="kpi-card income">
-        <div class="kpi-icon-wrapper">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="kpi-icon"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
-        </div>
-        <div class="kpi-data">
-          <span class="kpi-label">Revenus Mensuels</span>
-          <h2 class="kpi-value">{{ totalIncome().toLocaleString() }} €</h2>
-        </div>
-      </div>
-
-      <div class="kpi-card expense">
-        <div class="kpi-icon-wrapper">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="kpi-icon"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
-        </div>
-        <div class="kpi-data">
-          <span class="kpi-label">Dépenses Mensuelles</span>
-          <h2 class="kpi-value">{{ totalExpense().toLocaleString() }} €</h2>
+          <span class="kpi-label">Compte Courant</span>
+          <h2 class="kpi-value" [class.negative]="availableBalance() < 0" style="color: #1e3a8a;">{{ availableBalance().toLocaleString() }} €</h2>
         </div>
       </div>
 
@@ -44,7 +24,17 @@
         </div>
         <div class="kpi-data">
           <span class="kpi-label">Épargne Totalisée</span>
-          <h2 class="kpi-value">{{ totalSavings().toLocaleString() }} €</h2>
+          <h2 class="kpi-value" style="color: #d97706;">{{ totalSavings().toLocaleString() }} €</h2>
+        </div>
+      </div>
+
+      <div class="kpi-card balance">
+        <div class="kpi-icon-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="kpi-icon"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+        </div>
+        <div class="kpi-data">
+          <span class="kpi-label">Patrimoine Net Global</span>
+          <h2 class="kpi-value" [class.negative]="totalBalance() < 0">{{ totalBalance().toLocaleString() }} €</h2>
         </div>
       </div>
     </div>

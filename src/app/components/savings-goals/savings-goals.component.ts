@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { SavingsGoalService } from '../../services/savings-goal.service';
+import { TransactionService } from '../../services/transaction.service';
 import { SavingsGoal } from '../../models/savings-goal.model';
 import { User } from '../../models/user.model';
 
@@ -15,6 +16,7 @@ export class SavingsGoalsComponent implements OnInit {
   // Decoupled state variables converted to Signals
   readonly savingsGoals = signal<SavingsGoal[]>([]);
   readonly isLoading = signal(false);
+  readonly availableBalance = signal(0);
 
   // Modals state toggles
   showGoalModal = false;
@@ -32,7 +34,8 @@ export class SavingsGoalsComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private savingsGoalService: SavingsGoalService
+    private savingsGoalService: SavingsGoalService,
+    private transactionService: TransactionService
   ) {}
 
   ngOnInit(): void {
@@ -48,13 +51,25 @@ export class SavingsGoalsComponent implements OnInit {
       return;
     }
     this.isLoading.set(true);
+    const userId = this.currentUser.id;
     
-    console.log("SavingsGoalsComponent: Fetching goals for user:", this.currentUser.id);
-    this.savingsGoalService.getGoalsByUserId(this.currentUser.id).subscribe({
+    console.log("SavingsGoalsComponent: Fetching goals for user:", userId);
+    this.savingsGoalService.getGoalsByUserId(userId).subscribe({
       next: (goals) => {
         console.log("SavingsGoalsComponent: Successfully loaded goals count:", goals.length);
         this.savingsGoals.set(goals ? [...goals] : []);
-        this.isLoading.set(false);
+        
+        // Also load available balance to validate progress adjustments
+        this.transactionService.getDashboardSummary(userId).subscribe({
+          next: (summary) => {
+            this.availableBalance.set(summary.availableBalance || 0);
+            this.isLoading.set(false);
+          },
+          error: (err) => {
+            console.error('SavingsGoalsComponent: Error fetching dashboard summary:', err);
+            this.isLoading.set(false);
+          }
+        });
       },
       error: (err) => {
         console.error('SavingsGoalsComponent: Error fetching savings goals:', err);
@@ -120,12 +135,24 @@ export class SavingsGoalsComponent implements OnInit {
       return;
     }
 
+    const oldAmount = this.selectedGoal.currentAmount || 0;
+    const diff = this.goalProgressAmount - oldAmount;
+
+    if (diff > 0 && diff > this.availableBalance()) {
+      alert(`Solde insuffisant sur votre compte courant pour effectuer ce transfert d'épargne !\n\nSolde disponible : ${this.availableBalance().toLocaleString()} €\nMontant requis : ${diff.toLocaleString()} €`);
+      return;
+    }
+
     this.savingsGoalService.updateProgress(this.selectedGoal.id, this.goalProgressAmount).subscribe({
       next: () => {
         this.closeProgressGoalModal();
         this.loadGoals();
       },
-      error: (err) => console.error('Error updating goal progress:', err)
+      error: (err: any) => {
+        console.error('Error updating goal progress:', err);
+        const errMsg = err?.error?.message || err?.message || "Erreur lors de la mise à jour.";
+        alert(`Échec de l'ajustement : ${errMsg}`);
+      }
     });
   }
 

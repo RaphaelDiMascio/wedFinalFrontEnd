@@ -135,7 +135,8 @@
           <div class="form-group">
             <label for="goalProgress">Montant d'Épargne Cumulé (€) *</label>
             <input id="goalProgress" type="number" min="0" [max]="selectedGoal?.amount ?? null" [(ngModel)]="goalProgressAmount" name="goalProgressAmount" placeholder="0.00" required />
-            <span class="text-secondary text-xs mt-1 block">Maximum cible : {{ selectedGoal?.amount }} €</span>
+            <span class="text-secondary text-xs mt-1 block">Maximum cible : {{ selectedGoal?.amount }} € (Actuel : {{ selectedGoal?.currentAmount }} €)</span>
+            <span class="text-secondary text-xs mt-1 block">Solde courant disponible : {{ availableBalance().toLocaleString() }} €</span>
           </div>
         </div>
 

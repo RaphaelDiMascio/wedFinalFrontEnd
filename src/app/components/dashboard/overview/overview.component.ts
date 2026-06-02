@@ -24,6 +24,7 @@ export class OverviewComponent implements OnInit {
 
   // Aggregates Signals
   readonly totalBalance = signal(0);
+  readonly availableBalance = signal(0);
   readonly totalIncome = signal(0);
   readonly totalExpense = signal(0);
   readonly totalSavings = signal(0);
@@ -78,6 +79,7 @@ export class OverviewComponent implements OnInit {
         try {
           console.log("OverviewComponent: Successfully loaded backend summary:", summary);
           this.totalBalance.set(summary.totalBalance || 0);
+          this.availableBalance.set(summary.availableBalance || 0);
           this.totalIncome.set(summary.totalIncome || 0);
           this.totalExpense.set(summary.totalExpense || 0);
           this.totalSavings.set(summary.totalSavings || 0);
