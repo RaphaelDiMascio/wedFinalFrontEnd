@@ -6,7 +6,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-categories',
   templateUrl: './categories.component.html',
-  standalone: false
+  standalone: false,
 })
 export class CategoriesComponent implements OnInit {
   // Decoupled state variables converted to Signals
@@ -47,7 +47,7 @@ export class CategoriesComponent implements OnInit {
       error: (err) => {
         console.error('CategoriesComponent: Error fetching categories:', err);
         this.isLoading.set(false);
-      }
+      },
     });
   }
 
@@ -61,7 +61,7 @@ export class CategoriesComponent implements OnInit {
         icon: 'warning',
         title: 'Attention',
         text: 'Veuillez spécifier un nom de catégorie.',
-        confirmButtonColor: '#3085d6'
+        confirmButtonColor: '#3085d6',
       });
       return;
     }
@@ -76,19 +76,23 @@ export class CategoriesComponent implements OnInit {
           title: 'Catégorie créée !',
           text: 'La catégorie a été ajoutée avec succès.',
           timer: 1500,
-          showConfirmButton: false
+          showConfirmButton: false,
         });
       },
       error: (err) => {
-        const errMsg = err?.error?.message || 'Cette catégorie existe déjà ou est invalide.';
+        const errMsg =
+          (typeof err?.error === 'string'
+            ? err.error
+            : err?.error?.text || err?.error?.message || err?.message) ||
+          'Cette catégorie existe déjà ou est invalide.';
         Swal.fire({
           icon: 'error',
           title: 'Erreur',
           text: errMsg,
-          confirmButtonColor: '#3085d6'
+          confirmButtonColor: '#3085d6',
         });
         console.error(err);
-      }
+      },
     });
   }
 
@@ -101,7 +105,7 @@ export class CategoriesComponent implements OnInit {
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
       confirmButtonText: 'Oui, supprimer',
-      cancelButtonText: 'Annuler'
+      cancelButtonText: 'Annuler',
     }).then((result) => {
       if (result.isConfirmed) {
         this.categoryService.deleteCategory(id).subscribe({
@@ -112,19 +116,23 @@ export class CategoriesComponent implements OnInit {
               title: 'Supprimée !',
               text: 'La catégorie a été supprimée.',
               timer: 1500,
-              showConfirmButton: false
+              showConfirmButton: false,
             });
           },
           error: (err) => {
-            const errMsg = err?.error?.message || 'Erreur lors de la suppression de la catégorie.';
+            const errMsg =
+              (typeof err?.error === 'string'
+                ? err.error
+                : err?.error?.text || err?.error?.message || err?.message) ||
+              'Erreur lors de la suppression de la catégorie.';
             Swal.fire({
               icon: 'error',
               title: 'Erreur',
               text: errMsg,
-              confirmButtonColor: '#3085d6'
+              confirmButtonColor: '#3085d6',
             });
             console.error('Error deleting category:', err);
-          }
+          },
         });
       }
     });

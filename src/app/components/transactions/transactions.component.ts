@@ -228,7 +228,7 @@ export class TransactionsComponent implements OnInit {
         },
         error: (err) => {
           console.error('Error updating transaction:', err);
-          const errMsg = err?.error?.message || 'Erreur lors de la modification de la transaction.';
+          const errMsg = (typeof err?.error === 'string' ? err.error : (err?.error?.text || err?.error?.message || err?.message)) || 'Erreur lors de la modification de la transaction.';
           Swal.fire({
             icon: 'error',
             title: 'Erreur',
@@ -252,7 +252,7 @@ export class TransactionsComponent implements OnInit {
         },
         error: (err) => {
           console.error('Error creating transaction:', err);
-          const errMsg = err?.error?.message || 'Erreur lors de la création de la transaction.';
+          const errMsg = (typeof err?.error === 'string' ? err.error : (err?.error?.text || err?.error?.message || err?.message)) || 'Erreur lors de la création de la transaction.';
           Swal.fire({
             icon: 'error',
             title: 'Erreur',
@@ -288,7 +288,7 @@ export class TransactionsComponent implements OnInit {
           },
           error: (err) => {
             console.error('Error deleting transaction:', err);
-            const errMsg = err?.error?.message || 'Erreur lors de la suppression de la transaction.';
+            const errMsg = (typeof err?.error === 'string' ? err.error : (err?.error?.text || err?.error?.message || err?.message)) || 'Erreur lors de la suppression de la transaction.';
             Swal.fire({
               icon: 'error',
               title: 'Erreur',

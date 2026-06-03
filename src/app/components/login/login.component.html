@@ -14,21 +14,7 @@
         <p class="text-secondary small">{{ isLoginMode ? 'Gérez vos finances personnelles avec élégance.' : 'Commencez à suivre vos revenus, dépenses et épargnes.' }}</p>
       </div>
 
-      <!-- Error Alert -->
-      @if (errorMessage) {
-        <div class="alert alert-danger d-flex align-items-center gap-2 py-2" role="alert">
-          <i class="bi bi-exclamation-circle"></i>
-          <span>{{ errorMessage }}</span>
-        </div>
-      }
 
-      <!-- Success Alert -->
-      @if (successMessage) {
-        <div class="alert alert-success d-flex align-items-center gap-2 py-2" role="alert">
-          <i class="bi bi-check-circle"></i>
-          <span>{{ successMessage }}</span>
-        </div>
-      }
 
       <!-- Form -->
       <form (submit)="onSubmit(); $event.preventDefault()">

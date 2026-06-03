@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-login',
@@ -12,14 +13,13 @@ export class LoginComponent {
   username = '';
   password = '';
   confirmPassword = '';
-  
-  errorMessage = '';
-  successMessage = '';
   isLoading = false;
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    private zone: NgZone
   ) {
     // If already logged in, redirect directly to dashboard
     if (this.authService.isLoggedIn()) {
@@ -29,8 +29,6 @@ export class LoginComponent {
 
   toggleMode(): void {
     this.isLoginMode = !this.isLoginMode;
-    this.errorMessage = '';
-    this.successMessage = '';
     this.username = '';
     this.password = '';
     this.confirmPassword = '';
@@ -38,46 +36,87 @@ export class LoginComponent {
 
   onSubmit(): void {
     if (!this.username.trim() || !this.password) {
-      this.errorMessage = 'Veuillez remplir tous les champs.';
+      Swal.fire({
+        icon: 'warning',
+        title: 'Champs requis',
+        text: 'Veuillez remplir tous les champs.',
+        confirmButtonColor: '#003B8D'
+      });
       return;
     }
 
     if (!this.isLoginMode && this.password !== this.confirmPassword) {
-      this.errorMessage = 'Les mots de passe ne correspondent pas.';
+      Swal.fire({
+        icon: 'warning',
+        title: 'Mots de passe différents',
+        text: 'Les mots de passe ne correspondent pas.',
+        confirmButtonColor: '#003B8D'
+      });
       return;
     }
 
     this.isLoading = true;
-    this.errorMessage = '';
-    this.successMessage = '';
-
     const payload = { username: this.username.trim(), password: this.password };
 
     if (this.isLoginMode) {
       this.authService.login(payload).subscribe({
         next: () => {
-          this.successMessage = 'Connexion réussie ! Redirection...';
-          setTimeout(() => {
-            this.router.navigate(['/dashboard']);
-          }, 1000);
+          this.zone.run(() => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Connexion réussie !',
+              text: 'Redirection vers votre tableau de bord...',
+              timer: 1500,
+              showConfirmButton: false
+            });
+            setTimeout(() => {
+              this.router.navigate(['/dashboard']);
+            }, 1500);
+          });
         },
         error: (err) => {
-          this.isLoading = false;
-          this.errorMessage = err?.error?.message || 'Nom d\'utilisateur ou mot de passe incorrect.';
+          const errMsg = (typeof err?.error === 'string' ? err.error : (err?.error?.text || err?.error?.message || err?.message)) || 'Nom d\'utilisateur ou mot de passe incorrect.';
+          this.zone.run(() => {
+            this.isLoading = false;
+            this.cdr.detectChanges();
+            Swal.fire({
+              icon: 'error',
+              title: 'Erreur de connexion',
+              text: errMsg,
+              confirmButtonColor: '#003B8D'
+            });
+          });
           console.error(err);
         }
       });
     } else {
       this.authService.register(payload).subscribe({
         next: () => {
-          this.successMessage = 'Compte créé avec succès ! Redirection...';
-          setTimeout(() => {
-            this.router.navigate(['/dashboard']);
-          }, 1000);
+          this.zone.run(() => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Compte créé !',
+              text: 'Redirection vers votre tableau de bord...',
+              timer: 1500,
+              showConfirmButton: false
+            });
+            setTimeout(() => {
+              this.router.navigate(['/dashboard']);
+            }, 1500);
+          });
         },
         error: (err) => {
-          this.isLoading = false;
-          this.errorMessage = err?.error?.message || 'Ce nom d\'utilisateur existe déjà.';
+          const errMsg = (typeof err?.error === 'string' ? err.error : (err?.error?.text || err?.error?.message || err?.message)) || 'Ce nom d\'utilisateur existe déjà.';
+          this.zone.run(() => {
+            this.isLoading = false;
+            this.cdr.detectChanges();
+            Swal.fire({
+              icon: 'error',
+              title: 'Erreur d\'inscription',
+              text: errMsg,
+              confirmButtonColor: '#003B8D'
+            });
+          });
           console.error(err);
         }
       });

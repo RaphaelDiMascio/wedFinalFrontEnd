@@ -151,7 +151,7 @@ export class SavingsGoalsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error creating savings goal:', err);
-        const errMsg = err?.error?.message || 'Erreur lors de la création de l\'objectif d\'épargne.';
+        const errMsg = (typeof err?.error === 'string' ? err.error : (err?.error?.text || err?.error?.message || err?.message)) || 'Erreur lors de la création de l\'objectif d\'épargne.';
         Swal.fire({
           icon: 'error',
           title: 'Erreur',
@@ -200,7 +200,7 @@ export class SavingsGoalsComponent implements OnInit {
       },
       error: (err: any) => {
         console.error('Error updating goal progress:', err);
-        const errMsg = err?.error?.message || err?.message || "Erreur lors de la mise à jour.";
+        const errMsg = (typeof err?.error === 'string' ? err.error : (err?.error?.text || err?.error?.message || err?.message || "Erreur lors de la mise à jour."));
         Swal.fire({
           icon: 'error',
           title: 'Échec de l\'ajustement',
@@ -235,7 +235,7 @@ export class SavingsGoalsComponent implements OnInit {
           },
           error: (err) => {
             console.error('Error deleting goal:', err);
-            const errMsg = err?.error?.message || 'Erreur lors de la suppression de l\'objectif.';
+            const errMsg = (typeof err?.error === 'string' ? err.error : (err?.error?.text || err?.error?.message || err?.message)) || 'Erreur lors de la suppression de l\'objectif.';
             Swal.fire({
               icon: 'error',
               title: 'Erreur',
