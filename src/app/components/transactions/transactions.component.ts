@@ -2,6 +2,7 @@ import { Component, OnInit, Output, EventEmitter, signal } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { CategoryService } from '../../services/category.service';
 import { TransactionService } from '../../services/transaction.service';
+import Swal from 'sweetalert2';
 
 import { User } from '../../models/user.model';
 import { Category } from '../../models/category.model';
@@ -195,7 +196,12 @@ export class TransactionsComponent implements OnInit {
 
   submitTransaction(): void {
     if (!this.currentUser || !this.currentUser.id || !this.txName.trim() || this.txAmount === null || this.txAmount <= 0 || !this.txCategoryId) {
-      alert("Veuillez remplir tous les champs obligatoires.");
+      Swal.fire({
+        icon: 'warning',
+        title: 'Champs requis',
+        text: 'Veuillez remplir tous les champs obligatoires.',
+        confirmButtonColor: '#3085d6'
+      });
       return;
     }
 
@@ -212,29 +218,87 @@ export class TransactionsComponent implements OnInit {
         next: () => {
           this.closeTransactionModal();
           this.fetchTransactions();
+          Swal.fire({
+            icon: 'success',
+            title: 'Transaction enregistrée !',
+            text: 'La transaction a été sauvegardée avec succès.',
+            timer: 1500,
+            showConfirmButton: false
+          });
         },
-        error: (err) => console.error('Error updating transaction:', err)
+        error: (err) => {
+          console.error('Error updating transaction:', err);
+          const errMsg = err?.error?.message || 'Erreur lors de la modification de la transaction.';
+          Swal.fire({
+            icon: 'error',
+            title: 'Erreur',
+            text: errMsg,
+            confirmButtonColor: '#3085d6'
+          });
+        }
       });
     } else {
       this.transactionService.createTransaction(payload, this.currentUser.id, this.txCategoryId).subscribe({
         next: () => {
           this.closeTransactionModal();
           this.fetchTransactions();
+          Swal.fire({
+            icon: 'success',
+            title: 'Transaction enregistrée !',
+            text: 'La transaction a été sauvegardée avec succès.',
+            timer: 1500,
+            showConfirmButton: false
+          });
         },
-        error: (err) => console.error('Error creating transaction:', err)
+        error: (err) => {
+          console.error('Error creating transaction:', err);
+          const errMsg = err?.error?.message || 'Erreur lors de la création de la transaction.';
+          Swal.fire({
+            icon: 'error',
+            title: 'Erreur',
+            text: errMsg,
+            confirmButtonColor: '#3085d6'
+          });
+        }
       });
     }
   }
 
   deleteTransaction(id: string): void {
-    if (confirm('Voulez-vous vraiment supprimer cette transaction ?')) {
-      this.transactionService.deleteTransaction(id).subscribe({
-        next: () => {
-          this.fetchTransactions();
-        },
-        error: (err) => console.error('Error deleting transaction:', err)
-      });
-    }
+    Swal.fire({
+      title: 'Voulez-vous vraiment supprimer cette transaction ?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Oui, supprimer',
+      cancelButtonText: 'Annuler'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.transactionService.deleteTransaction(id).subscribe({
+          next: () => {
+            this.fetchTransactions();
+            Swal.fire({
+              icon: 'success',
+              title: 'Supprimée !',
+              text: 'La transaction a été supprimée.',
+              timer: 1500,
+              showConfirmButton: false
+            });
+          },
+          error: (err) => {
+            console.error('Error deleting transaction:', err);
+            const errMsg = err?.error?.message || 'Erreur lors de la suppression de la transaction.';
+            Swal.fire({
+              icon: 'error',
+              title: 'Erreur',
+              text: errMsg,
+              confirmButtonColor: '#3085d6'
+            });
+          }
+        });
+      }
+    });
   }
 
   clearFilters(): void {

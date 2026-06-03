@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CategoryService } from '../../services/category.service';
 import { Category } from '../../models/category.model';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-categories',
@@ -56,7 +57,12 @@ export class CategoriesComponent implements OnInit {
 
   submitCategory(): void {
     if (!this.newCategoryName.trim()) {
-      alert('Veuillez spécifier un nom de catégorie.');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Attention',
+        text: 'Veuillez spécifier un nom de catégorie.',
+        confirmButtonColor: '#3085d6'
+      });
       return;
     }
 
@@ -65,22 +71,62 @@ export class CategoriesComponent implements OnInit {
         this.newCategoryName = '';
         this.showCategoryModal = false;
         this.loadCategories();
+        Swal.fire({
+          icon: 'success',
+          title: 'Catégorie créée !',
+          text: 'La catégorie a été ajoutée avec succès.',
+          timer: 1500,
+          showConfirmButton: false
+        });
       },
       error: (err) => {
-        alert('Cette catégorie existe déjà ou est invalide.');
+        const errMsg = err?.error?.message || 'Cette catégorie existe déjà ou est invalide.';
+        Swal.fire({
+          icon: 'error',
+          title: 'Erreur',
+          text: errMsg,
+          confirmButtonColor: '#3085d6'
+        });
         console.error(err);
       }
     });
   }
 
   deleteCategory(id: string): void {
-    if (confirm('Voulez-vous vraiment supprimer cette catégorie ? Toutes les transactions associées devront être mises à jour.')) {
-      this.categoryService.deleteCategory(id).subscribe({
-        next: () => {
-          this.loadCategories();
-        },
-        error: (err) => console.error('Error deleting category:', err)
-      });
-    }
+    Swal.fire({
+      title: 'Voulez-vous vraiment supprimer cette catégorie ?',
+      text: 'Toutes les transactions associées devront être mises à jour.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Oui, supprimer',
+      cancelButtonText: 'Annuler'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.categoryService.deleteCategory(id).subscribe({
+          next: () => {
+            this.loadCategories();
+            Swal.fire({
+              icon: 'success',
+              title: 'Supprimée !',
+              text: 'La catégorie a été supprimée.',
+              timer: 1500,
+              showConfirmButton: false
+            });
+          },
+          error: (err) => {
+            const errMsg = err?.error?.message || 'Erreur lors de la suppression de la catégorie.';
+            Swal.fire({
+              icon: 'error',
+              title: 'Erreur',
+              text: errMsg,
+              confirmButtonColor: '#3085d6'
+            });
+            console.error('Error deleting category:', err);
+          }
+        });
+      }
+    });
   }
 }

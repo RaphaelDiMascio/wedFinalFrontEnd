@@ -4,6 +4,7 @@ import { SavingsGoalService } from '../../services/savings-goal.service';
 import { TransactionService } from '../../services/transaction.service';
 import { SavingsGoal } from '../../models/savings-goal.model';
 import { User } from '../../models/user.model';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-savings-goals',
@@ -119,7 +120,12 @@ export class SavingsGoalsComponent implements OnInit {
 
   submitGoal(): void {
     if (!this.currentUser || !this.currentUser.id || !this.goalName.trim() || this.goalTargetAmount === null || this.goalTargetAmount <= 0 || !this.goalDeadline) {
-      alert("Veuillez remplir tous les champs obligatoires.");
+      Swal.fire({
+        icon: 'warning',
+        title: 'Champs requis',
+        text: 'Veuillez remplir tous les champs obligatoires.',
+        confirmButtonColor: '#3085d6'
+      });
       return;
     }
 
@@ -135,14 +141,35 @@ export class SavingsGoalsComponent implements OnInit {
       next: () => {
         this.closeGoalModal();
         this.loadGoals();
+        Swal.fire({
+          icon: 'success',
+          title: 'Objectif créé !',
+          text: 'Votre objectif d\'épargne a été enregistré.',
+          timer: 1500,
+          showConfirmButton: false
+        });
       },
-      error: (err) => console.error('Error creating savings goal:', err)
+      error: (err) => {
+        console.error('Error creating savings goal:', err);
+        const errMsg = err?.error?.message || 'Erreur lors de la création de l\'objectif d\'épargne.';
+        Swal.fire({
+          icon: 'error',
+          title: 'Erreur',
+          text: errMsg,
+          confirmButtonColor: '#3085d6'
+        });
+      }
     });
   }
 
   submitProgressUpdate(): void {
     if (!this.selectedGoal || !this.selectedGoal.id || this.goalProgressAmount === null || this.goalProgressAmount < 0) {
-      alert("Veuillez saisir un montant d'épargne valide.");
+      Swal.fire({
+        icon: 'warning',
+        title: 'Montant invalide',
+        text: 'Veuillez saisir un montant d\'épargne valide.',
+        confirmButtonColor: '#3085d6'
+      });
       return;
     }
 
@@ -150,7 +177,12 @@ export class SavingsGoalsComponent implements OnInit {
     const diff = this.goalProgressAmount - oldAmount;
 
     if (diff > 0 && diff > this.availableBalance()) {
-      alert(`Solde insuffisant sur votre compte courant pour effectuer ce transfert d'épargne !\n\nSolde disponible : ${this.availableBalance().toLocaleString()} €\nMontant requis : ${diff.toLocaleString()} €`);
+      Swal.fire({
+        icon: 'error',
+        title: 'Solde insuffisant',
+        text: `Solde insuffisant sur votre compte courant pour effectuer ce transfert d'épargne !\n\nSolde disponible : ${this.availableBalance().toLocaleString()} €\nMontant requis : ${diff.toLocaleString()} €`,
+        confirmButtonColor: '#3085d6'
+      });
       return;
     }
 
@@ -158,24 +190,62 @@ export class SavingsGoalsComponent implements OnInit {
       next: () => {
         this.closeProgressGoalModal();
         this.loadGoals();
+        Swal.fire({
+          icon: 'success',
+          title: 'Progression mise à jour !',
+          text: 'Votre épargne a été ajustée.',
+          timer: 1500,
+          showConfirmButton: false
+        });
       },
       error: (err: any) => {
         console.error('Error updating goal progress:', err);
         const errMsg = err?.error?.message || err?.message || "Erreur lors de la mise à jour.";
-        alert(`Échec de l'ajustement : ${errMsg}`);
+        Swal.fire({
+          icon: 'error',
+          title: 'Échec de l\'ajustement',
+          text: errMsg,
+          confirmButtonColor: '#3085d6'
+        });
       }
     });
   }
 
   deleteGoal(id: string): void {
-    if (confirm('Voulez-vous vraiment supprimer cet objectif d\'épargne ?')) {
-      this.savingsGoalService.deleteGoal(id).subscribe({
-        next: () => {
-          this.loadGoals();
-        },
-        error: (err) => console.error('Error deleting goal:', err)
-      });
-    }
+    Swal.fire({
+      title: 'Voulez-vous vraiment supprimer cet objectif d\'épargne ?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Oui, supprimer',
+      cancelButtonText: 'Annuler'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.savingsGoalService.deleteGoal(id).subscribe({
+          next: () => {
+            this.loadGoals();
+            Swal.fire({
+              icon: 'success',
+              title: 'Supprimé !',
+              text: 'L\'objectif a été supprimé.',
+              timer: 1500,
+              showConfirmButton: false
+            });
+          },
+          error: (err) => {
+            console.error('Error deleting goal:', err);
+            const errMsg = err?.error?.message || 'Erreur lors de la suppression de l\'objectif.';
+            Swal.fire({
+              icon: 'error',
+              title: 'Erreur',
+              text: errMsg,
+              confirmButtonColor: '#3085d6'
+            });
+          }
+        });
+      }
+    });
   }
 
   getDaysRemaining(deadlineStr: string): number {

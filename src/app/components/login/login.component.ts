@@ -63,7 +63,7 @@ export class LoginComponent {
         },
         error: (err) => {
           this.isLoading = false;
-          this.errorMessage = 'Nom d\'utilisateur ou mot de passe incorrect.';
+          this.errorMessage = err?.error?.message || 'Nom d\'utilisateur ou mot de passe incorrect.';
           console.error(err);
         }
       });
@@ -77,7 +77,7 @@ export class LoginComponent {
         },
         error: (err) => {
           this.isLoading = false;
-          this.errorMessage = 'Ce nom d\'utilisateur existe déjà.';
+          this.errorMessage = err?.error?.message || 'Ce nom d\'utilisateur existe déjà.';
           console.error(err);
         }
       });
