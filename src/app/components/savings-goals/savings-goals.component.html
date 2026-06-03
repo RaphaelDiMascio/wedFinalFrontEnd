@@ -1,95 +1,110 @@
-<div class="tab-pane">
-  <div class="goals-header-row mb-6">
+<div>
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div>
-      <h2>Poches d'Épargne Projets</h2>
-      <p class="text-secondary">Gérez vos réserves d'argent et préparez vos investissements futurs.</p>
+      <h2 class="h4 fw-bold mb-1">Poches d'Épargne Projets</h2>
+      <p class="text-secondary small mb-0">Gérez vos réserves d'argent et préparez vos investissements futurs.</p>
     </div>
-    <button class="btn btn-primary" (click)="openGoalModal()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    <button class="btn btn-primary d-flex align-items-center gap-1" (click)="openGoalModal()">
+      <i class="bi bi-plus-lg"></i>
       <span>Ouvrir une Poche</span>
     </button>
   </div>
 
   @if (isLoading()) {
-    <div class="empty-state card">
-      <span class="spinner"></span>
-      <p class="mt-4">Synchronisation de vos poches d'épargne...</p>
+    <div class="card border-0 shadow-sm">
+      <div class="card-body text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-3 text-secondary">Synchronisation de vos poches d'épargne...</p>
+      </div>
     </div>
   } @else {
-    
-    <div class="goals-grid">
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
       @for (goal of savingsGoals(); track goal.id) {
-        <div class="goal-card card">
-          <div class="goal-card-header">
-            <div>
-              <h3 class="goal-title">{{ goal.name }}</h3>
-              <p class="goal-desc text-secondary text-sm" *ngIf="goal.description">{{ goal.description }}</p>
+        <div class="col">
+          <div class="card border-0 shadow-sm h-100 goal-card">
+            <div class="card-body p-3 d-flex flex-column gap-3">
+
+              <!-- Header -->
+              <div class="d-flex justify-content-between align-items-start gap-2">
+                <div>
+                  <h3 class="h6 fw-bold mb-1">{{ goal.name }}</h3>
+                  <p class="text-secondary small mb-0 text-truncate" *ngIf="goal.description" style="max-width: 200px;">{{ goal.description }}</p>
+                </div>
+                <span class="badge bg-warning text-white fw-bold">{{ ((goal.currentAmount / goal.amount) * 100).toFixed(0) }}%</span>
+              </div>
+
+              <!-- Progress -->
+              <div>
+                <div class="d-flex align-items-baseline gap-1 mb-2">
+                  <span class="fw-bold" style="font-family: 'Montserrat', sans-serif; font-size: 1.375rem;">{{ goal.currentAmount.toLocaleString() }} €</span>
+                  <span class="text-muted">/</span>
+                  <span class="text-secondary small">{{ goal.amount.toLocaleString() }} €</span>
+                </div>
+                <div class="progress progress-md">
+                  <div class="progress-bar" role="progressbar" [style.width.%]="(goal.currentAmount / goal.amount) * 100" style="background-color: var(--app-accent);"></div>
+                </div>
+              </div>
+
+              <!-- Meta -->
+              <div class="d-flex justify-content-between align-items-center small">
+                <span class="text-secondary fw-semibold">Échéance: {{ goal.deadline }}</span>
+                <span class="badge bg-danger" *ngIf="getDaysRemaining(goal.deadline) < 15 && getDaysRemaining(goal.deadline) >= 0 && goal.currentAmount < goal.amount" style="animation: pulse 1.5s infinite;">
+                  ⏱️ {{ getDaysRemaining(goal.deadline) }} j.
+                </span>
+                <span class="badge bg-success" *ngIf="goal.currentAmount >= goal.amount">
+                  🎉 Objectif Atteint !
+                </span>
+                <span class="text-muted fw-semibold" *ngIf="getDaysRemaining(goal.deadline) >= 15 && goal.currentAmount < goal.amount">
+                  ⏱️ {{ getDaysRemaining(goal.deadline) }} j. restants
+                </span>
+              </div>
+
+              <!-- Actions -->
+              <div class="d-flex align-items-center gap-2 border-top pt-3 mt-auto">
+                <button class="btn btn-outline-secondary btn-sm flex-grow-1" (click)="openProgressGoalModal(goal)">
+                  ⚙️ Ajuster l'épargne
+                </button>
+                <button class="btn btn-sm btn-light text-danger" (click)="deleteGoal(goal.id!)" title="Supprimer la poche">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
             </div>
-            <span class="goal-percent-badge">{{ ((goal.currentAmount / goal.amount) * 100).toFixed(0) }}%</span>
-          </div>
-
-          <div class="goal-card-progress">
-            <div class="progress-ratio">
-              <span class="current">{{ goal.currentAmount.toLocaleString() }} €</span>
-              <span class="separator">/</span>
-              <span class="target">{{ goal.amount.toLocaleString() }} €</span>
-            </div>
-
-            <div class="progress-bar-container large">
-              <div class="progress-bar-fill animated" [style.width.%]="(goal.currentAmount / goal.amount) * 100"></div>
-            </div>
-          </div>
-
-          <div class="goal-card-meta">
-            <span class="deadline">Échéance: {{ goal.deadline }}</span>
-            <span class="days-remaining" [class.danger]="getDaysRemaining(goal.deadline) < 15" *ngIf="getDaysRemaining(goal.deadline) >= 0 && goal.currentAmount < goal.amount">
-              ⏱️ {{ getDaysRemaining(goal.deadline) }} j. restants
-            </span>
-            <span class="days-remaining completed" *ngIf="goal.currentAmount >= goal.amount">
-              🎉 Objectif Atteint !
-            </span>
-          </div>
-
-          <div class="goal-card-actions">
-            <button class="btn btn-secondary btn-sm flex-grow" (click)="openProgressGoalModal(goal)">
-              ⚙️ Ajuster l'épargne
-            </button>
-            <button class="btn-icon text-danger" (click)="deleteGoal(goal.id!)" title="Supprimer la poche">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-            </button>
           </div>
         </div>
       }
 
-      <!-- INLINE TRIGGER: Clickable empty card to create a goal directly -->
-      <div class="goal-card card empty-card" (click)="openGoalModal()" style="cursor: pointer; justify-content: center; align-items: center; min-height: 220px; border-style: dashed; border-width: 2px;">
-        <div class="text-center py-6 text-secondary">
-          <span style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem; color: var(--primary);">➕</span>
-          <span class="font-bold block" style="color: var(--primary);">Ouvrir un nouveau projet</span>
-          <span class="text-xs text-muted block mt-1">Définir un objectif de financement</span>
+      <!-- Empty card to create a new goal -->
+      <div class="col">
+        <div class="card h-100 empty-card d-flex align-items-center justify-content-center" (click)="openGoalModal()" style="min-height: 220px;">
+          <div class="text-center py-4">
+            <span class="d-block mb-2" style="font-size: 2.5rem; color: var(--bs-primary);">➕</span>
+            <span class="fw-bold d-block" style="color: var(--bs-primary);">Ouvrir un nouveau projet</span>
+            <small class="text-muted d-block mt-1">Définir un objectif de financement</small>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- SAVINGS SIMULATOR WIDGET (UX upgrade) -->
-    <div class="card mt-6">
-      <div class="card-header">
-        <h3>Simulateur de Versement Mensuel</h3>
+    <!-- Savings Simulator -->
+    <div class="card border-0 shadow-sm mt-4">
+      <div class="card-header bg-white py-3">
+        <h3 class="h6 mb-0 fw-bold">Simulateur de Versement Mensuel</h3>
       </div>
       <div class="card-body">
-        <p class="text-secondary text-sm mb-4">Déterminez l'effort d'épargne mensuel nécessaire pour matérialiser vos projets d'investissement.</p>
-        <div class="filters-grid" style="align-items: center;">
-          <div class="form-group">
-            <label for="simTarget">Montant cible recherché (€)</label>
-            <input id="simTarget" type="number" min="1" [(ngModel)]="simTargetAmount" name="simTargetAmount" placeholder="Ex: 5000" />
+        <p class="text-secondary small mb-3">Déterminez l'effort d'épargne mensuel nécessaire pour matérialiser vos projets d'investissement.</p>
+        <div class="row g-3 align-items-end">
+          <div class="col-md-4">
+            <label for="simTarget" class="form-label form-label-app">Montant cible recherché (€)</label>
+            <input id="simTarget" type="number" class="form-control" min="1" [(ngModel)]="simTargetAmount" name="simTargetAmount" placeholder="Ex: 5000" />
           </div>
-          <div class="form-group">
-            <label for="simMonths">Horizon de placement (en mois)</label>
-            <input id="simMonths" type="number" min="1" [(ngModel)]="simMonthsCount" name="simMonthsCount" placeholder="Ex: 12" />
+          <div class="col-md-4">
+            <label for="simMonths" class="form-label form-label-app">Horizon de placement (en mois)</label>
+            <input id="simMonths" type="number" class="form-control" min="1" [(ngModel)]="simMonthsCount" name="simMonthsCount" placeholder="Ex: 12" />
           </div>
-          <div class="form-group" style="margin-bottom: 0;">
-            <label>Effort d épargne estimé</label>
-            <div class="py-3 font-bold text-center" style="background-color: var(--primary-light); color: var(--primary); border-radius: var(--border-radius-sm); font-size: 1rem; border: 1px solid rgba(0, 59, 141, 0.1);">
+          <div class="col-md-4">
+            <label class="form-label form-label-app">Effort d épargne estimé</label>
+            <div class="py-2 fw-bold text-center rounded" style="background-color: var(--app-primary-light); color: var(--bs-primary); border: 1px solid rgba(0, 59, 141, 0.1);">
               {{ simMonthlyContribution !== null ? simMonthlyContribution.toFixed(2) + ' € / mois' : '-- € / mois' }}
             </div>
           </div>
@@ -100,44 +115,42 @@
   }
 </div>
 
-<!-- 1. ADD SAVINGS GOAL MODAL -->
+<!-- ADD SAVINGS GOAL MODAL -->
 @if (showGoalModal) {
   <div class="modal-overlay">
     <div class="modal-card">
-      <div class="modal-header">
-        <h3>Créer un Projet d'Épargne</h3>
-        <button class="btn-icon" (click)="closeGoalModal()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 px-4" style="border-radius: 16px 16px 0 0;">
+        <h3 class="h6 mb-0 fw-bold">Créer un Projet d'Épargne</h3>
+        <button class="btn btn-sm btn-light rounded-circle" (click)="closeGoalModal()" style="width: 32px; height: 32px;">
+          <i class="bi bi-x-lg"></i>
         </button>
       </div>
 
       <form (submit)="submitGoal(); $event.preventDefault()">
-        <div class="modal-body">
-          
-          <div class="form-group">
-            <label for="goalName">Intitulé du projet *</label>
-            <input id="goalName" type="text" [(ngModel)]="goalName" name="goalName" placeholder="Ex: Apport immobilier, Vacances..." required />
+        <div class="p-4">
+          <div class="mb-3">
+            <label for="goalName" class="form-label form-label-app">Intitulé du projet *</label>
+            <input id="goalName" type="text" class="form-control" [(ngModel)]="goalName" name="goalName" placeholder="Ex: Apport immobilier, Vacances..." required />
           </div>
 
-          <div class="form-group">
-            <label for="goalTarget">Capital cible recherché (€) *</label>
-            <input id="goalTarget" type="number" min="1" [(ngModel)]="goalTargetAmount" name="goalTargetAmount" placeholder="1000" required />
+          <div class="mb-3">
+            <label for="goalTarget" class="form-label form-label-app">Capital cible recherché (€) *</label>
+            <input id="goalTarget" type="number" class="form-control" min="1" [(ngModel)]="goalTargetAmount" name="goalTargetAmount" placeholder="1000" required />
           </div>
 
-          <div class="form-group">
-            <label for="goalDeadline">Date butoir de l objectif *</label>
-            <input id="goalDeadline" type="date" [(ngModel)]="goalDeadline" name="goalDeadline" required />
+          <div class="mb-3">
+            <label for="goalDeadline" class="form-label form-label-app">Date butoir de l objectif *</label>
+            <input id="goalDeadline" type="date" class="form-control" [(ngModel)]="goalDeadline" name="goalDeadline" required />
           </div>
 
-          <div class="form-group">
-            <label for="goalDescription">Description du projet (optionnelle)</label>
-            <textarea id="goalDescription" [(ngModel)]="goalDescription" name="goalDescription" rows="3" placeholder="Notes complémentaires sur l objectif d epargne..."></textarea>
+          <div class="mb-3">
+            <label for="goalDescription" class="form-label form-label-app">Description du projet (optionnelle)</label>
+            <textarea id="goalDescription" class="form-control" [(ngModel)]="goalDescription" name="goalDescription" rows="3" placeholder="Notes complémentaires sur l objectif d epargne..."></textarea>
           </div>
-
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeGoalModal()">Annuler</button>
+        <div class="card-footer bg-white d-flex justify-content-end gap-2 px-4 py-3" style="border-radius: 0 0 16px 16px;">
+          <button type="button" class="btn btn-outline-secondary" (click)="closeGoalModal()">Annuler</button>
           <button type="submit" class="btn btn-primary">Ouvrir la poche</button>
         </div>
       </form>
@@ -145,31 +158,31 @@
   </div>
 }
 
-<!-- 2. ADJUST GOAL SAVINGS PROGRESS MODAL -->
+<!-- ADJUST GOAL PROGRESS MODAL -->
 @if (showProgressGoalModal) {
   <div class="modal-overlay">
     <div class="modal-card modal-sm">
-      <div class="modal-header">
-        <h3>Ajuster la Poche</h3>
-        <button class="btn-icon" (click)="closeProgressGoalModal()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 px-4" style="border-radius: 16px 16px 0 0;">
+        <h3 class="h6 mb-0 fw-bold">Ajuster la Poche</h3>
+        <button class="btn btn-sm btn-light rounded-circle" (click)="closeProgressGoalModal()" style="width: 32px; height: 32px;">
+          <i class="bi bi-x-lg"></i>
         </button>
       </div>
 
       <form (submit)="submitProgressUpdate(); $event.preventDefault()">
-        <div class="modal-body">
-          <p class="text-secondary text-sm mb-4">Indiquez la réserve d'argent cumulée pour le projet : <strong>{{ selectedGoal?.name }}</strong>.</p>
-          
-          <div class="form-group">
-            <label for="goalProgress">Réserve Cumulée (€) *</label>
-            <input id="goalProgress" type="number" min="0" [max]="selectedGoal?.amount ?? null" [(ngModel)]="goalProgressAmount" name="goalProgressAmount" placeholder="0.00" required />
-            <span class="text-secondary text-xs mt-1 block">Maximum cible : {{ selectedGoal?.amount }} € (Actuel : {{ selectedGoal?.currentAmount }} €)</span>
-            <span class="text-secondary text-xs mt-1 block">Solde courant disponible : {{ availableBalance().toLocaleString() }} €</span>
+        <div class="p-4">
+          <p class="text-secondary small mb-3">Indiquez la réserve d'argent cumulée pour le projet : <strong>{{ selectedGoal?.name }}</strong>.</p>
+
+          <div class="mb-3">
+            <label for="goalProgress" class="form-label form-label-app">Réserve Cumulée (€) *</label>
+            <input id="goalProgress" type="number" class="form-control" min="0" [max]="selectedGoal?.amount ?? null" [(ngModel)]="goalProgressAmount" name="goalProgressAmount" placeholder="0.00" required />
+            <small class="text-secondary d-block mt-1">Maximum cible : {{ selectedGoal?.amount }} € (Actuel : {{ selectedGoal?.currentAmount }} €)</small>
+            <small class="text-secondary d-block mt-1">Solde courant disponible : {{ availableBalance().toLocaleString() }} €</small>
           </div>
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeProgressGoalModal()">Annuler</button>
+        <div class="card-footer bg-white d-flex justify-content-end gap-2 px-4 py-3" style="border-radius: 0 0 16px 16px;">
+          <button type="button" class="btn btn-outline-secondary" (click)="closeProgressGoalModal()">Annuler</button>
           <button type="submit" class="btn btn-primary">Confirmer</button>
         </div>
       </form>
