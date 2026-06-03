@@ -18,4 +18,6 @@ export interface DashboardSummary {
   insights: string[];
   recentTransactions: Transaction[];
   savingsGoals: SavingsGoal[];
+  activeYear?: number;
+  activeMonth?: number;
 }

@@ -32,6 +32,17 @@ export class SavingsGoalsComponent implements OnInit {
   selectedGoal: SavingsGoal | null = null;
   goalProgressAmount: number | null = null;
 
+  // Monthly Savings Simulator variables
+  simTargetAmount: number | null = null;
+  simMonthsCount: number | null = null;
+
+  get simMonthlyContribution(): number | null {
+    if (this.simTargetAmount === null || this.simMonthsCount === null || this.simMonthsCount <= 0) {
+      return null;
+    }
+    return this.simTargetAmount / this.simMonthsCount;
+  }
+
   constructor(
     private authService: AuthService,
     private savingsGoalService: SavingsGoalService,

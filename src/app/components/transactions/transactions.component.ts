@@ -244,4 +244,16 @@ export class TransactionsComponent implements OnInit {
     this.filterEndDate = '';
     this.searchQuery = '';
   }
+
+  get totalFilteredIncome(): number {
+    return this.filteredTransactions
+      .filter(tx => tx.transactionType === 'INCOME')
+      .reduce((sum, tx) => sum + (tx.amount || 0), 0);
+  }
+
+  get totalFilteredExpense(): number {
+    return this.filteredTransactions
+      .filter(tx => tx.transactionType === 'EXPENSE')
+      .reduce((sum, tx) => sum + (tx.amount || 0), 0);
+  }
 }

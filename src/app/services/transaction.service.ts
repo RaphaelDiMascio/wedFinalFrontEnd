@@ -15,8 +15,14 @@ export class TransactionService {
 
   constructor(private http: HttpClient) {}
 
-  getDashboardSummary(userId: string): Observable<DashboardSummary> {
-    const params = new HttpParams().set('userId', userId);
+  getDashboardSummary(userId: string, year?: number, month?: number): Observable<DashboardSummary> {
+    let params = new HttpParams().set('userId', userId);
+    if (year !== undefined && year !== null) {
+      params = params.set('year', year.toString());
+    }
+    if (month !== undefined && month !== null) {
+      params = params.set('month', month.toString());
+    }
     return this.http.get<DashboardSummary>(`${this.dashboardUrl}/summary`, { params });
   }
 

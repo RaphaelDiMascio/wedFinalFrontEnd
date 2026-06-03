@@ -29,6 +29,21 @@ export class OverviewComponent implements OnInit {
   readonly totalExpense = signal(0);
   readonly totalSavings = signal(0);
 
+  // Selected date parameters
+  readonly activeYear = signal<number | null>(null);
+  readonly activeMonth = signal<number | null>(null);
+
+  getActiveMonthName(): string {
+    const year = this.activeYear();
+    const month = this.activeMonth();
+    if (!year || !month) return 'Mois en cours';
+    const names = [
+      'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+      'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+    ];
+    return `${names[month - 1]} ${year}`;
+  }
+
   // Breakdown & insights
   readonly categorySpending = signal<{ category: Category; amount: number; percentage: number; color: string }[]>([]);
   readonly insights = signal<string[]>([]);
@@ -64,7 +79,7 @@ export class OverviewComponent implements OnInit {
     this.viewChange.emit(tab);
   }
 
-  loadOverviewData(): void {
+  loadOverviewData(year?: number, month?: number): void {
     if (!this.currentUser || !this.currentUser.id) {
       console.warn("OverviewComponent: Cannot load data. User or User ID is missing.", this.currentUser);
       this.isLoading.set(false);
@@ -73,8 +88,8 @@ export class OverviewComponent implements OnInit {
     this.isLoading.set(true);
     const userId = this.currentUser.id;
 
-    console.log("OverviewComponent: Fetching dashboard summary from backend...");
-    this.transactionService.getDashboardSummary(userId).subscribe({
+    console.log("OverviewComponent: Fetching dashboard summary from backend (year=" + year + ", month=" + month + ")...");
+    this.transactionService.getDashboardSummary(userId, year, month).subscribe({
       next: (summary) => {
         try {
           console.log("OverviewComponent: Successfully loaded backend summary:", summary);
@@ -83,6 +98,9 @@ export class OverviewComponent implements OnInit {
           this.totalIncome.set(summary.totalIncome || 0);
           this.totalExpense.set(summary.totalExpense || 0);
           this.totalSavings.set(summary.totalSavings || 0);
+          
+          this.activeYear.set(summary.activeYear || null);
+          this.activeMonth.set(summary.activeMonth || null);
           
           // Map and add colors to category spending
           const mappedSpending = (summary.categorySpending || []).map(item => ({
@@ -105,6 +123,8 @@ export class OverviewComponent implements OnInit {
       }
     });
   }
+
+
 
   getCategoryColor(name: string): string {
     return this.categoryColors[name] || '#8e9aaf';

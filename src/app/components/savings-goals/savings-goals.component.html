@@ -1,27 +1,28 @@
 <div class="tab-pane">
   <div class="goals-header-row mb-6">
     <div>
-      <h2>Objectifs d'Épargne définis</h2>
-      <p class="text-secondary">Visualisez l'avancement de vos projets financiers.</p>
+      <h2>Poches d'Épargne Projets</h2>
+      <p class="text-secondary">Gérez vos réserves d'argent et préparez vos investissements futurs.</p>
     </div>
     <button class="btn btn-primary" (click)="openGoalModal()">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-      <span>Créer un Objectif</span>
+      <span>Ouvrir une Poche</span>
     </button>
   </div>
 
   @if (isLoading()) {
     <div class="empty-state card">
-      <span class="spinner" style="border-top-color: var(--primary);"></span>
-      <p>Chargement des objectifs...</p>
+      <span class="spinner"></span>
+      <p class="mt-4">Synchronisation de vos poches d'épargne...</p>
     </div>
-  } @else if (savingsGoals().length > 0) {
+  } @else {
+    
     <div class="goals-grid">
       @for (goal of savingsGoals(); track goal.id) {
         <div class="goal-card card">
           <div class="goal-card-header">
             <div>
-              <h3 class="goal-title font-semibold">{{ goal.name }}</h3>
+              <h3 class="goal-title">{{ goal.name }}</h3>
               <p class="goal-desc text-secondary text-sm" *ngIf="goal.description">{{ goal.description }}</p>
             </div>
             <span class="goal-percent-badge">{{ ((goal.currentAmount / goal.amount) * 100).toFixed(0) }}%</span>
@@ -40,35 +41,62 @@
           </div>
 
           <div class="goal-card-meta">
-            <span class="deadline">Date cible: {{ goal.deadline }}</span>
-            <span class="days-remaining" [class.danger]="getDaysRemaining(goal.deadline) < 15" *ngIf="getDaysRemaining(goal.deadline) >= 0">
-              ⏱️ {{ getDaysRemaining(goal.deadline) }} jours restants
+            <span class="deadline">Échéance: {{ goal.deadline }}</span>
+            <span class="days-remaining" [class.danger]="getDaysRemaining(goal.deadline) < 15" *ngIf="getDaysRemaining(goal.deadline) >= 0 && goal.currentAmount < goal.amount">
+              ⏱️ {{ getDaysRemaining(goal.deadline) }} j. restants
             </span>
             <span class="days-remaining completed" *ngIf="goal.currentAmount >= goal.amount">
-              🎉 Complété !
+              🎉 Objectif Atteint !
             </span>
           </div>
 
           <div class="goal-card-actions">
             <button class="btn btn-secondary btn-sm flex-grow" (click)="openProgressGoalModal(goal)">
-              Ajuster l'Épargne
+              ⚙️ Ajuster l'épargne
             </button>
-            <button class="btn btn-icon text-danger" (click)="deleteGoal(goal.id!)" title="Supprimer l'objectif">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            <button class="btn-icon text-danger" (click)="deleteGoal(goal.id!)" title="Supprimer la poche">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
             </button>
           </div>
         </div>
       }
-    </div>
-  } @else {
-    <div class="card py-16 empty-card">
-      <div class="empty-state">
-        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="empty-icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-        <h3>Aucun objectif d'épargne défini</h3>
-        <p>Définissez un projet (achat de voiture, vacances, matelas de sécurité) pour commencer à économiser efficacement.</p>
-        <button class="btn btn-primary mt-6" (click)="openGoalModal()">Créer mon premier objectif</button>
+
+      <!-- INLINE TRIGGER: Clickable empty card to create a goal directly -->
+      <div class="goal-card card empty-card" (click)="openGoalModal()" style="cursor: pointer; justify-content: center; align-items: center; min-height: 220px; border-style: dashed; border-width: 2px;">
+        <div class="text-center py-6 text-secondary">
+          <span style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem; color: var(--primary);">➕</span>
+          <span class="font-bold block" style="color: var(--primary);">Ouvrir un nouveau projet</span>
+          <span class="text-xs text-muted block mt-1">Définir un objectif de financement</span>
+        </div>
       </div>
     </div>
+
+    <!-- SAVINGS SIMULATOR WIDGET (UX upgrade) -->
+    <div class="card mt-6">
+      <div class="card-header">
+        <h3>Simulateur de Versement Mensuel</h3>
+      </div>
+      <div class="card-body">
+        <p class="text-secondary text-sm mb-4">Déterminez l'effort d'épargne mensuel nécessaire pour matérialiser vos projets d'investissement.</p>
+        <div class="filters-grid" style="align-items: center;">
+          <div class="form-group">
+            <label for="simTarget">Montant cible recherché (€)</label>
+            <input id="simTarget" type="number" min="1" [(ngModel)]="simTargetAmount" name="simTargetAmount" placeholder="Ex: 5000" />
+          </div>
+          <div class="form-group">
+            <label for="simMonths">Horizon de placement (en mois)</label>
+            <input id="simMonths" type="number" min="1" [(ngModel)]="simMonthsCount" name="simMonthsCount" placeholder="Ex: 12" />
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Effort d épargne estimé</label>
+            <div class="py-3 font-bold text-center" style="background-color: var(--primary-light); color: var(--primary); border-radius: var(--border-radius-sm); font-size: 1rem; border: 1px solid rgba(0, 59, 141, 0.1);">
+              {{ simMonthlyContribution !== null ? simMonthlyContribution.toFixed(2) + ' € / mois' : '-- € / mois' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   }
 </div>
 
@@ -77,7 +105,7 @@
   <div class="modal-overlay">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>Nouvel Objectif d'Épargne</h3>
+        <h3>Créer un Projet d'Épargne</h3>
         <button class="btn-icon" (click)="closeGoalModal()">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
@@ -87,30 +115,30 @@
         <div class="modal-body">
           
           <div class="form-group">
-            <label for="goalName">Nom de l'objectif *</label>
-            <input id="goalName" type="text" [(ngModel)]="goalName" name="goalName" placeholder="Ex: Voyage au Japon, Achat PC..." required />
+            <label for="goalName">Intitulé du projet *</label>
+            <input id="goalName" type="text" [(ngModel)]="goalName" name="goalName" placeholder="Ex: Apport immobilier, Vacances..." required />
           </div>
 
           <div class="form-group">
-            <label for="goalTarget">Montant cible (€) *</label>
+            <label for="goalTarget">Capital cible recherché (€) *</label>
             <input id="goalTarget" type="number" min="1" [(ngModel)]="goalTargetAmount" name="goalTargetAmount" placeholder="1000" required />
           </div>
 
           <div class="form-group">
-            <label for="goalDeadline">Date limite cible *</label>
+            <label for="goalDeadline">Date butoir de l objectif *</label>
             <input id="goalDeadline" type="date" [(ngModel)]="goalDeadline" name="goalDeadline" required />
           </div>
 
           <div class="form-group">
-            <label for="goalDescription">Description (optionnelle)</label>
-            <textarea id="goalDescription" [(ngModel)]="goalDescription" name="goalDescription" rows="3" placeholder="Pourquoi épargnez-vous pour ce projet..."></textarea>
+            <label for="goalDescription">Description du projet (optionnelle)</label>
+            <textarea id="goalDescription" [(ngModel)]="goalDescription" name="goalDescription" rows="3" placeholder="Notes complémentaires sur l objectif d epargne..."></textarea>
           </div>
 
         </div>
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" (click)="closeGoalModal()">Annuler</button>
-          <button type="submit" class="btn btn-primary">Créer l'objectif</button>
+          <button type="submit" class="btn btn-primary">Ouvrir la poche</button>
         </div>
       </form>
     </div>
@@ -122,7 +150,7 @@
   <div class="modal-overlay">
     <div class="modal-card modal-sm">
       <div class="modal-header">
-        <h3>Ajuster l'Épargne</h3>
+        <h3>Ajuster la Poche</h3>
         <button class="btn-icon" (click)="closeProgressGoalModal()">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
@@ -130,10 +158,10 @@
 
       <form (submit)="submitProgressUpdate(); $event.preventDefault()">
         <div class="modal-body">
-          <p class="text-secondary text-sm mb-4">Saisissez le montant total actuellement mis de côté pour l'objectif : <strong>{{ selectedGoal?.name }}</strong>.</p>
+          <p class="text-secondary text-sm mb-4">Indiquez la réserve d'argent cumulée pour le projet : <strong>{{ selectedGoal?.name }}</strong>.</p>
           
           <div class="form-group">
-            <label for="goalProgress">Montant d'Épargne Cumulé (€) *</label>
+            <label for="goalProgress">Réserve Cumulée (€) *</label>
             <input id="goalProgress" type="number" min="0" [max]="selectedGoal?.amount ?? null" [(ngModel)]="goalProgressAmount" name="goalProgressAmount" placeholder="0.00" required />
             <span class="text-secondary text-xs mt-1 block">Maximum cible : {{ selectedGoal?.amount }} € (Actuel : {{ selectedGoal?.currentAmount }} €)</span>
             <span class="text-secondary text-xs mt-1 block">Solde courant disponible : {{ availableBalance().toLocaleString() }} €</span>
