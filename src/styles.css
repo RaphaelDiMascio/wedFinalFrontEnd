@@ -1,8 +1,8 @@
 /* =============================================
-   BoursoTrack — Bootstrap 5 Custom Overrides
+   BankoTrack — Bootstrap 5 Custom Overrides
    ============================================= */
 
-/* --- Bootstrap Theme Overrides (Boursobank palette) --- */
+/* --- Bootstrap Theme Overrides (BankoTrack palette) --- */
 :root,
 [data-bs-theme="light"] {
   --bs-primary: #003B8D;
@@ -37,7 +37,18 @@
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #F4F6FB !important; /* Arrière-plan opaque et solide de l'application */
 }
+
+/* Enforce solid opaque backgrounds on Bootstrap components */
+.card {
+  background-color: #ffffff !important;
+}
+
+.navbar {
+  background-color: #ffffff !important;
+}
+
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Montserrat', sans-serif;
