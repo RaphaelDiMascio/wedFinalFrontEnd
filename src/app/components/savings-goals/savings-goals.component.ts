@@ -22,12 +22,20 @@ export class SavingsGoalsComponent implements OnInit {
   // Modals state toggles
   showGoalModal = false;
   showProgressGoalModal = false;
+  showEditGoalModal = false;
 
   // Add Savings Goal Form variables
   goalName = '';
   goalDescription = '';
   goalTargetAmount: number | null = null;
   goalDeadline = '';
+
+  // Edit Savings Goal Form variables
+  editingGoalId: string | null = null;
+  editGoalName = '';
+  editGoalDescription = '';
+  editGoalTargetAmount: number | null = null;
+  editGoalDeadline = '';
 
   // Update Goal Progress Form variables
   selectedGoal: SavingsGoal | null = null;
@@ -243,6 +251,64 @@ export class SavingsGoalsComponent implements OnInit {
               confirmButtonColor: '#3085d6'
             });
           }
+        });
+      }
+    });
+  }
+
+  openEditGoalModal(goal: SavingsGoal): void {
+    if (!goal || !goal.id) return;
+    this.editingGoalId = goal.id;
+    this.editGoalName = goal.name;
+    this.editGoalDescription = goal.description || '';
+    this.editGoalTargetAmount = goal.amount;
+    this.editGoalDeadline = goal.deadline;
+    this.showEditGoalModal = true;
+  }
+
+  closeEditGoalModal(): void {
+    this.showEditGoalModal = false;
+    this.editingGoalId = null;
+  }
+
+  submitEditGoal(): void {
+    if (!this.editingGoalId || !this.editGoalName.trim() || this.editGoalTargetAmount === null || this.editGoalTargetAmount <= 0 || !this.editGoalDeadline) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Champs requis',
+        text: 'Veuillez remplir tous les champs obligatoires.',
+        confirmButtonColor: '#3085d6'
+      });
+      return;
+    }
+
+    const payload: Partial<SavingsGoal> = {
+      name: this.editGoalName.trim(),
+      description: this.editGoalDescription.trim(),
+      amount: this.editGoalTargetAmount,
+      deadline: this.editGoalDeadline
+    };
+
+    this.savingsGoalService.updateGoal(this.editingGoalId, payload).subscribe({
+      next: () => {
+        this.closeEditGoalModal();
+        this.loadGoals();
+        Swal.fire({
+          icon: 'success',
+          title: 'Objectif modifié !',
+          text: 'Votre poche d\'épargne a été mise à jour.',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      },
+      error: (err) => {
+        console.error('Error updating savings goal:', err);
+        const errMsg = (typeof err?.error === 'string' ? err.error : (err?.error?.text || err?.error?.message || err?.message)) || 'Erreur lors de la modification de l\'objectif d\'épargne.';
+        Swal.fire({
+          icon: 'error',
+          title: 'Erreur',
+          text: errMsg,
+          confirmButtonColor: '#3085d6'
         });
       }
     });

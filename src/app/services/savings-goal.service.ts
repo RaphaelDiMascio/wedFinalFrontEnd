@@ -33,6 +33,14 @@ export class SavingsGoalService {
     return this.http.put<SavingsGoal>(`${this.apiUrl}/${id}/progress`, null, { params });
   }
 
+  updateGoal(id: string, goal: Partial<SavingsGoal>): Observable<SavingsGoal> {
+    const formattedGoal = {
+      ...goal,
+      deadline: this.formatDate(goal.deadline || new Date().toISOString())
+    };
+    return this.http.put<SavingsGoal>(`${this.apiUrl}/${id}`, formattedGoal);
+  }
+
   deleteGoal(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
