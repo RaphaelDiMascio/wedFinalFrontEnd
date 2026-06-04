@@ -149,4 +149,65 @@ export class CategoriesComponent implements OnInit {
       }
     });
   }
+
+  editCategory(cat: Category): void {
+    if (!cat.user) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Action impossible',
+        text: 'Les catégories globales partagées ne peuvent pas être modifiées.',
+        confirmButtonColor: '#3085d6',
+      });
+      return;
+    }
+
+    Swal.fire({
+      title: 'Modifier la catégorie',
+      input: 'text',
+      inputLabel: 'Nouveau nom de la catégorie',
+      inputValue: cat.name,
+      showCancelButton: true,
+      confirmButtonText: 'Enregistrer',
+      cancelButtonText: 'Annuler',
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      inputValidator: (value) => {
+        if (!value || !value.trim()) {
+          return 'Veuillez saisir un nom valide.';
+        }
+        return null;
+      }
+    }).then((result) => {
+      if (result.isConfirmed && result.value) {
+        const newName = result.value.trim();
+        this.categoryService.updateCategory(cat.id!, newName).subscribe({
+          next: () => {
+            this.loadCategories();
+            Swal.fire({
+              icon: 'success',
+              title: 'Catégorie modifiée !',
+              text: 'La catégorie a été renommée avec succès.',
+              timer: 1500,
+              showConfirmButton: false,
+            });
+          },
+          error: (err) => {
+            const errMsg =
+              (typeof err?.error === 'string'
+                ? err.error
+                : err?.error?.text || err?.error?.message || err?.message) ||
+              'Erreur lors de la modification de la catégorie.';
+            Swal.fire({
+              icon: 'error',
+              title: 'Erreur',
+              text: errMsg,
+              confirmButtonColor: '#3085d6',
+            });
+            console.error('Error editing category:', err);
+          }
+        });
+      }
+    });
+  }
 }
+

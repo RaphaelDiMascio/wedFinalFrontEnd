@@ -75,6 +75,11 @@ export class CategoryService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  updateCategory(id: string, newName: string): Observable<Category> {
+    return this.http.put<Category>(`${this.apiUrl}/${id}`, { name: newName });
+  }
+
+
   private seedDefaultCategories(): Observable<Category[]> {
     const seedRequests = this.defaultCategories.map(name => 
       this.createCategory(name).pipe(
