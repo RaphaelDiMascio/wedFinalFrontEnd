@@ -97,6 +97,17 @@ export class CategoriesComponent implements OnInit {
   }
 
   deleteCategory(id: string): void {
+    const category = this.categories().find(c => c.id === id);
+    if (category && !category.user) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Action impossible',
+        text: 'Les catégories globales partagées ne peuvent pas être supprimées.',
+        confirmButtonColor: '#3085d6',
+      });
+      return;
+    }
+
     Swal.fire({
       title: 'Voulez-vous vraiment supprimer cette catégorie ?',
       text: 'Toutes les transactions associées devront être mises à jour.',
@@ -107,6 +118,7 @@ export class CategoriesComponent implements OnInit {
       confirmButtonText: 'Oui, supprimer',
       cancelButtonText: 'Annuler',
     }).then((result) => {
+
       if (result.isConfirmed) {
         this.categoryService.deleteCategory(id).subscribe({
           next: () => {

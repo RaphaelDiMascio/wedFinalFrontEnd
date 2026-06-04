@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, forkJoin, map, of, switchMap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Category } from '../models/category.model';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -23,10 +24,17 @@ export class CategoryService {
     'Autre'
   ];
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {}
 
   getCategories(name?: string): Observable<Category[]> {
+    const user = this.authService.currentUser();
     let params = new HttpParams();
+    if (user && user.id) {
+      params = params.set('userId', user.id);
+    }
     if (name) {
       params = params.set('name', name);
     }
@@ -35,7 +43,13 @@ export class CategoryService {
         if (categories.length === 0 && !name) {
           // No categories exist on the backend yet, auto-seed defaults!
           return this.seedDefaultCategories().pipe(
-            switchMap(() => this.http.get<Category[]>(this.apiUrl))
+            switchMap(() => {
+              let seedParams = new HttpParams();
+              if (user && user.id) {
+                seedParams = seedParams.set('userId', user.id);
+              }
+              return this.http.get<Category[]>(this.apiUrl, { params: seedParams });
+            })
           );
         }
         return of(categories);
@@ -45,7 +59,12 @@ export class CategoryService {
   }
 
   createCategory(categoryName: string): Observable<Category> {
-    return this.http.post<Category>(this.apiUrl, { name: categoryName });
+    const user = this.authService.currentUser();
+    let params = new HttpParams();
+    if (user && user.id) {
+      params = params.set('userId', user.id);
+    }
+    return this.http.post<Category>(this.apiUrl, { name: categoryName }, { params });
   }
 
   getCategoryById(id: string): Observable<Category> {
@@ -58,7 +77,7 @@ export class CategoryService {
 
   private seedDefaultCategories(): Observable<Category[]> {
     const seedRequests = this.defaultCategories.map(name => 
-      this.http.post<Category>(this.apiUrl, { name }).pipe(
+      this.createCategory(name).pipe(
         catchError(err => {
           console.warn(`Category "${name}" seed error:`, err);
           return of(null);

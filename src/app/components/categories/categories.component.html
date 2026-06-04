@@ -24,9 +24,17 @@
               <div class="card category-item-card border d-flex flex-row align-items-center gap-2 p-3">
                 <span class="category-color-dot" [style.background-color]="getCategoryColor(cat.name)"></span>
                 <span class="fw-medium flex-grow-1">{{ cat.name }}</span>
-                <button class="btn btn-sm btn-light text-danger ms-auto" (click)="deleteCategory(cat.id!)" title="Supprimer la catégorie">
-                  <i class="bi bi-x-lg"></i>
-                </button>
+                @if (cat.user) {
+                  <button class="btn btn-sm btn-light text-danger ms-auto" (click)="deleteCategory(cat.id!)" title="Supprimer la catégorie">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                } @else {
+                  <span class="badge bg-light text-muted ms-auto d-flex align-items-center gap-1" title="Catégorie système partagée" style="font-size: 0.75rem; border: 1px solid #e9ecef;">
+                    <i class="bi bi-lock-fill"></i>
+                    <span>Standard</span>
+                  </span>
+                }
+
               </div>
             </div>
           }
